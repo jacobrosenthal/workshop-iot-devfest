@@ -172,7 +172,7 @@ So lets play with [Tomu](https://tomu.im) Tomu only has 2 leds (red and green) c
 
 Download [my tomu hal fork](https://github.com/jacobrosenthal/imtomu-rs/tree/iot-dev-fest) and specifically the [blink example](https://github.com/jacobrosenthal/imtomu-rs/blob/iot-dev-fest/examples/blink.rs)
 
-Were going to need one change here, some things were doing are using whats called 'nightly' so type `cargo default nightly` to use the more bleeding edge version of the compiler.
+Were going to need one change here, some things were doing are using whats called 'nightly' so type `rustup default nightly` to use the more bleeding edge version of the compiler.
 
 And when we run well need to run in 'release mode' and since this is normally a library, we can tell cargo to run its example file with `cargo run --release --example blink_hal` Ive hooked up scripts so that upon building, it also uploads the code to your tomu via dfu. Youll need dfu-util installed
 
