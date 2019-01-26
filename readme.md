@@ -1,4 +1,4 @@
-# iot-rustfest
+# workshop-iot-devfest
 
 Rust is an incredibly promising new (~10 year old) systems language whose offers of safety, speed, and concurrency are badly needed in the IOT space right now. We all know a great engineer can develop safe C code, but clearly we need more, faster, and cheaper lines of code than C has been able to deliver in recent decades.
 
@@ -172,9 +172,9 @@ So lets play with [Tomu](https://tomu.im) Tomu only has 2 leds (red and green) c
 
 Download [my tomu hal fork](https://github.com/jacobrosenthal/imtomu-rs/tree/iot-dev-fest) and specifically the [blink example](https://github.com/jacobrosenthal/imtomu-rs/blob/iot-dev-fest/examples/blink.rs)
 
-Were going to need one change here, some things were doing are using whats called 'nightly' so type `rustup default nightly` to use the more bleeding edge version of the compiler.
+From the directions there youll see were going to need a few more commands to set up embedded: `rustup default nightly` `rustup target add thumbv6m-none-eabi` `rustup component add llvm-tools-preview`
 
-And when we run well need to run in 'release mode' and since this is normally a library, we can tell cargo to run its example file with `cargo run --release --example blink_hal` Ive hooked up scripts so that upon building, it also uploads the code to your tomu via dfu. Youll need dfu-util installed
+And then when we run well need to run in 'release mode' and since this is normally a library, we can tell cargo to run its example file with `cargo run --release --example blink` Ive hooked up scripts so that upon building, it also uploads the code to your tomu via dfu. Youll need dfu-util installed
 
 So what embedded rust attempts to do is remove 'global state' that is the registers by turning them into structs, extending functionality on them with traits, and restricting usage of them via the same ownership models weve seen.
 
