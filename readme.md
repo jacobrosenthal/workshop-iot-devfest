@@ -167,9 +167,16 @@ fn main() -> ! {
 ```
 So no_std is the big deal here. We don't get anything that starts with std:: including String! There are make do packages, and ways around, but for now lets assume we don't use what we call things that 'allocate'
 
-Lets take a look at [my tomu hal fork](https://github.com/jacobrosenthal/imtomu-rs/tree/iot-dev-fest) and specifically the [blink example](https://github.com/jacobrosenthal/imtomu-rs/blob/iot-dev-fest/examples/blink.rs)
+## lets go
+So lets play with [Tomu](https://tomu.im) Tomu only has 2 leds (red and green) capacitive touch buttons and USB (though Rust drivers dont exist for those yet). So were just going to show off gpio blinking. First You're going to need to download dfu-util for your platform in order to upload code. Follow the directions there.
 
-So what embedded rust attempts to do is remove global state that is the registers by turning them into structs, extending functionality on them with traits, and restricting usage of them via the same ownership models weve seen.
+Download [my tomu hal fork](https://github.com/jacobrosenthal/imtomu-rs/tree/iot-dev-fest) and specifically the [blink example](https://github.com/jacobrosenthal/imtomu-rs/blob/iot-dev-fest/examples/blink.rs)
+
+Were going to need one change here, some things were doing are using whats called 'nightly' so type `cargo default nightly` to use the more bleeding edge version of the compiler.
+
+And when we run well need to run in 'release mode' and since this is normally a library, we can tell cargo to run its example file with `cargo run --release --example blink_hal` Ive hooked up scripts so that upon building, it also uploads the code to your tomu via dfu. Youll need dfu-util installed
+
+So what embedded rust attempts to do is remove 'global state' that is the registers by turning them into structs, extending functionality on them with traits, and restricting usage of them via the same ownership models weve seen.
 
 
 References:
