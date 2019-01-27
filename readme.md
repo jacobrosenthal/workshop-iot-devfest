@@ -46,10 +46,10 @@ $
 ## define your terms
 
 Rust is a safe, typed, compiled, general programming language.
-* Safe is a very overloaded term in Rust, but by default Rust uses static analysis at compile time to enforces rules about memory usage. Traditonally, managing your own memory in languages like C++ and Objective-C has been very tedious and still error prone. Rust's solution to this, The borrow checker, is probably the defining feature of the Rust language. You have to spend a little more time annotating your code to say who owns a variable at any given time with the borrow checker keeping you honest the whole time. Its like pair programming with a friend.
+* Safe is a very overloaded term in Rust, but by default Rust uses static analysis at compile time to enforces rules about memory usage. Traditonally, managing your own memory in languages like C++ and Objective-C has been very tedious and still error prone. Rust's solution to this, The borrow checker, is probably the defining feature of the Rust language. You have to spend a little more time annotating your code to say who owns a variable at any given time with the borrow checker keeping you honest the whole time. It's like pair programming with a friend.
 * Typed - As opposed to languages like javascript, Rust forces you to state the types of variables going into and out of functions. This helps you organize your intentions and acts much like a set of tests to make sure your code makes sense.
 * Compiled - Rust has to do all its work up front at compile time and turns into a binary immediately. Compiles can be slow sometimes, but our code runs fast, and anywhere, as a result. [obligatory xkcd](https://xkcd.com/303/) 
-* General. Much like most modern laguages these days its not strictly functional or object oriented (OO). Futher it can be deployed almost anywhere. We can write backend server code, embedded microcontroller applications, and with WASM, even front end web applications, cloud functions and blockchains.
+* General. Much like most modern laguages these days it's not strictly functional or object oriented (OO). Futher it can be deployed almost anywhere. We can write backend server code, embedded microcontroller applications, and with WASM, even front end web applications, cloud functions and blockchains.
 
 ## lets make sound
 So lets play. [Crates.io](https://crates.io) is where all the fun libraries live. Lets make some noise with [rodio](https://crates.io/crates/rodio) (Note to linux users: You may need to install libasound2-dev with something like `apt install libasound2-dev`
@@ -81,7 +81,7 @@ fn main() {
 ```
 and just like last time lets `cargo run`. Make sure you have your volume turned up!
 
-So neat, but whats unwrap? If you take that out, the compiler will tell you `expected cpal::Device, found enum std::option::Option` Its saying, getting default_output_device might not exist and come back empty as an [Optional](https://doc.rust-lang.org/std/option/index.html) and you need to handle that. Here we handle it by just crashing if it goes poorly, well have to fix that later. I hope you're seeing a pattern, all the answers to our questions are in the Rust book and Language Reference.
+So neat, but whats unwrap? If you take that out, the compiler will tell you `expected cpal::Device, found enum std::option::Option` It's saying, getting default_output_device might not exist and come back empty as an [Optional](https://doc.rust-lang.org/std/option/index.html) and you need to handle that. Here we handle it by just crashing if it goes poorly, well have to fix that later. I hope you're seeing a pattern, all the answers to our questions are in the Rust book and Language Reference.
 
 
 * Play around here a bunch and get comfortable with the language. 
@@ -144,7 +144,7 @@ Note, this hooking many functions together is called the builder pattern, and al
 Can you edit the Display trait to make a long beep for dashes and a short beep for dots instead of/in addition to printing the character? You're probably thinking of doing this with an if statement, but a more Rusty solution would be to use [Match](https://doc.rust-lang.org/1.5.0/book/match.html). Note here, the morse characters are not a regular dash, but rather these these ascii characters `−` `·` 
 
 ### So why is Rust different than C++? 
-Safey can be acheived in C, for time and money. But its not baked into the language and its not easy to teach. Further, Rust's lack of legacy is a benefit more than a hinderance. Rust only has one compiler, not competing vendors with multiple compilers. Further Rustaceans are designing the language in Github issues and nightly code releases instead of by committees that only Facebook and Google can afford to fly to and attend and thus our needs can never be met. Rust has modularized code and a single package manager which means code sharing is far easier and comes more naturally to Rustaceans. C++ hopes to ship module support in their 2020 release, but many people are still running C++ 2014 today... 
+Safey can be acheived in C, for time and money. But it's not baked into the language and it's not easy to teach. Further, Rust's lack of legacy is a benefit more than a hinderance. Rust only has one compiler, not competing vendors with multiple compilers. Further Rustaceans are designing the language in Github issues and nightly code releases instead of by committees that only Facebook and Google can afford to fly to and attend and thus our needs can never be met. Rust has modularized code and a single package manager which means code sharing is far easier and comes more naturally to Rustaceans. C++ hopes to ship module support in their 2020 release, but many people are still running C++ 2014 today... 
 
 
 ## My bold claim
