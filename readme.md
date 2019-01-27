@@ -52,42 +52,41 @@ Rust is a safe, typed, compiled, general programming language.
 * General. Much like most modern laguages these days its not strictly functional or object oriented (OO). Futher it can be deployed almost anywhere. We can write backend server code, embedded microcontroller applications, and with WASM, even front end web applications, cloud functions and blockchains.
 
 ## lets make sound
-So lets play. [Crates.io](https://crates.io) is where all the fun libraries live. Lets make some noise with [rodio](https://crates.io/crates/rodio)
+So lets play. [Crates.io](https://crates.io) is where all the fun libraries live. Lets make some noise with [rodio](https://crates.io/crates/rodio) (Note to linux users: You may need to install libasound2-dev with something like `apt install libasound2-dev`
 
-It says it wants us to add this to our Cargo.toml under dependencies
+So rodio says it wants us to add it to our Cargo.toml under dependencies so lets do that
 ```
 [dependencies]
 rodio = "0.8.1"
 ```
 
-You can take a look at the documentation, but lets make a sin wave. 
-We need to import our package rodio and anything else we want to use from the package. Then well make a device and play a sound. 
+You can take a look at the [rodio documentation](https://docs.rs/rodio/0.8.1/rodio/), but heres some simple code to make a sin wave.
 ```
-use rodio::{
-    default_output_device, play_raw,
-    source::{SineWave, Source},
-};
+use rodio::default_output_device;
+use rodio::source::{SineWave, Source};
 use std::time::Duration;
 
 fn main() {
     let device = default_output_device().unwrap();
+    let sink = rodio::Sink::new(&device);
+
+    //make a little sine wave
     let source = SineWave::new(440);
-    let short = source.take_duration(Duration::from_millis(1000));
-    play_raw(&device, short.convert_samples());
+    let short = source.take_duration(Duration::from_millis(200));
+    sink.append(short.buffered());
 
-    loop {}
+    //actually play
+    sink.sleep_until_end();
 }
-
 ```
-and same thing as last time `cargo run`. 
+and just like last time lets `cargo run`. Make sure you have your volume turned up!
 
-So neat, but whats unwrap? If you take that out, the compiler will tell you `expected cpal::Device, found enum std::option::Option` Its saying, getting default_output_device might not exist and come back empty as an [Optional](https://doc.rust-lang.org/std/option/index.html) and you need to handle that. Here we handle it by just crashing if it goes poorly, well have to fix that later. I hope you're seeing a pattern, all the answers to our questions are in the Rust book.
-
-Also notice the loop. Our program will just exit before our sound can even start we just busy loop in there. Try to take it out.
+So neat, but whats unwrap? If you take that out, the compiler will tell you `expected cpal::Device, found enum std::option::Option` Its saying, getting default_output_device might not exist and come back empty as an [Optional](https://doc.rust-lang.org/std/option/index.html) and you need to handle that. Here we handle it by just crashing if it goes poorly, well have to fix that later. I hope you're seeing a pattern, all the answers to our questions are in the Rust book and Language Reference.
 
 
-* Play around here a bunch and get comfortable with the language. You're going to start running into the borrow checker here. If you see `use of moved value` try to use the `clone()` function to make a copy in this case. Thats the easy way out, when you're on a laptop sized machine its perfectly fine.
-* Try to download a wave file and play it instead of our generated sin wav
+* Play around here a bunch and get comfortable with the language. 
+* You're going to start running into the borrow checker here. You''ll see `use of moved value` which means you're using some variable a second time, but the first you used it, it was 'consumed'. One solution to [ownernship](https://doc.rust-lang.org/book/ch04-00-understanding-ownership.html) problems especially when you're not in a performance sensitive environment is to use the `clone()` function to make a copy of the thing, so try that. 
+* Read the [rodio documentation](https://docs.rs/rodio/0.8.1/rodio/) or [source code and examples](https://github.com/tomaka/rodio) for more options to try, like fading in and out, playing multiple tones at the same time, loading audio files from the filesystem.
 
 ## lets make text
 Lets get another package, a morse code package called [light-morse](https://crates.io/crates/light-morse) 
@@ -96,14 +95,12 @@ Lets get another package, a morse code package called [light-morse](https://crat
 
 
 ## lets make traits
-Anybody can write a wall of code. The way we organize code in Rust is in modules, and by making new types extending existing types. How did morse make a to_morse method on a String? Thats definately not in the standard library. Lets look at how morse was implemented. Code for libraries is generally in a file called [lib.rs](https://github.com/luki/light-morse/blob/master/src/lib.rs) They defined a trait called MorseSubstitution which is why they can call to_morse on a String that normally doesnt have a to_morse method. This is trait based inheritence is an important concept in rust.
-* Lets make a new trait in a new file called text.rs that extends Morse. For every Morse char they translate, lets print to screen with delays
+Anybody can write a wall of code. The way we organize code in Rust is in modules, and by making new types extending existing types. How did morse make a `to_morse()` method on a regular old String? Thats definately not in the standard library! Lets look at how morse was implemented. Code for libraries is generally in a file called [lib.rs](https://github.com/luki/light-morse/blob/master/src/lib.rs) We see they defined a trait called MorseSubstitution which is why they can call `to_morse()` on a String that normally doesnt have a to_morse method. This is [trait based inheritence](https://doc.rust-lang.org/book/ch10-02-traits.html) (called mixins in other languages) is an important concept in Rust/
+* Lets make a new trait in a new file called text.rs that extends Morse (which itself is just a String). For every Morse char they translate, lets print to screen with delays:
 ```
-use light_morse::*;
+use light_morse::Morse;
 use std::io::stdout;
 use std::io::Write;
-use std::thread;
-use std::time::Duration;
 
 pub trait Display {
     fn display(&self);
@@ -113,31 +110,35 @@ impl Display for Morse {
     fn display(&self) {
         for item in self.chars() {
             print!("{}", item);
-            stdout().flush().unwrap();
-
-            thread::sleep(Duration::from_millis(200));
         }
         println!();
     }
 }
 ```
-and in main.rs
+Here were using [iterators](https://doc.rust-lang.org/book/ch13-00-functional-features.html) another important concept in Rust you need to get to know. We can call the [.chars() function](https://doc.rust-lang.org/std/str/struct.Chars.html) on a String (Morse is just a String behind the scenes here) and do a for each over that iterator which is safer than a for loop where a common error you might have made is is off by one your index variable.
+
+Finally we need to make this new text.rs file available to our main.rs by importing it with `mod text;` and using your new trait with `use crate::text::Display`
 ```
 mod text;
 
 use crate::text::Display;
-use light_morse::*;
+use light_morse::MorseSubstitution;
+use light_morse::MorseType;
 
 fn main() {
     "Morse".to_string().to_morse(MorseType::Gerke).display();
 }
-
 ```
+Note were not printing anything out here anymore, weve hidden all that code in the display trait. Also note this hooking many functions together (builder pattern) as well as use of iterators above is one of the more declaritive (or functional) styles seen in Rust. Both syntaxes lead to rather pleasant and easy to reason about code.
 
-Alright this is the big one. Can you do the same thing with audio beeps?
+* Can you use of [thread::sleep](https://doc.rust-lang.org/std/thread/fn.sleep.html) to sleep between characters so it looks stuttery like text coming over the wire? You'll also needed to `stdout().flush()` between characters or they get buffered by the operating system and all come out at the same time.
+
+
+## put it all together
+Can you edit the Display trait to make a long beep for dashes and a short beep for dots instead of/in addition to printing the character? You're probably thinking of doing this with an if statement, but a more Rusty solution would be to use [Match](https://doc.rust-lang.org/1.5.0/book/match.html). Note here, the morse characters are not a regular dash, but rather these these ascii characters `−` `·` 
 
 ### So why is Rust different than C++? 
-Safey can be acheived in C, for time and money. But its not baked into the language and its not easy to teach. Further, Rust's lack of legacy is a benefit more than a hinderance. Rust only has one compiler, not competing vendors with multiple compilers. Further Rustaceans are designing the language in github issues and nightly code releases instead of by committes that only Facebook and Google can afford to fly to attend (and thus only their needs are ever met) Rust has modularized code and a single package manager, (Cargo, like npm for packages) which means code sharing is far easier and comes more naturally to Rustaceans. C++ hopes to ship module support in their 2020 release, but many people are still running C++ 2014 today...
+Safey can be acheived in C, for time and money. But its not baked into the language and its not easy to teach. Further, Rust's lack of legacy is a benefit more than a hinderance. Rust only has one compiler, not competing vendors with multiple compilers. Further Rustaceans are designing the language in github issues and nightly code releases instead of by committes that only Facebook and Google can afford to fly to attend (and thus only their needs are ever met) Rust has modularized code and a single package manager, (Cargo, like npm for packages) which means code sharing is far easier and comes more naturally to Rustaceans. C++ hopes to ship module support in their 2020 release, but many people are still running C++ 2014 today... Most of you here today have never and may never reach for C or C++ to play a bunch sounds and
 
 
 ## My bold claim
@@ -167,17 +168,21 @@ fn main() -> ! {
 ```
 So no_std is the big deal here. We don't get anything that starts with std:: including String! There are make do packages, and ways around, but for now lets assume we don't use what we call things that 'allocate'
 
-## lets go
-So lets play with [Tomu](https://tomu.im) Tomu only has 2 leds (red and green) capacitive touch buttons and USB (though Rust drivers dont exist for those yet). So were just going to show off gpio blinking. First You're going to need to download dfu-util for your platform in order to upload code. Follow the directions there.
+## tomu
+[Tomu](https://tomu.im) is a fun little arm microcontroller that fits in your USB-A port. I'm not affiliated in any way, I just hoped you'd always have a microcontroller with you would and no excuses to goof around with it. My thanks to [Crowd Supply](https://www.crowdsupply.com) for sponsoring these today. The Tomu has 2 leds (red and green), capacitive touch buttons and USB. With their [easy to use C code examples](https://github.com/im-tomu/tomu-quickstart) you could (in any language of your choosing) watch the USB for 'button presses' or have a program on your laptop trigger leds on the device like a notification, and many more things.
+
+But I'm developing the Rust capabilities for this board. GPIO blinky stuff is done, but USB and capacitive touch aren't yet so stay tuned.
+ 
+## setup and blink
+* Run `rustup target add thumbv6m-none-eabi` to add the compiler bits for this board
+* Run `rustup component add llvm-tools-preview`
+* Install [dfu-util](https://tomu.im/samples) from directions on this page
 
 Download [my tomu hal fork](https://github.com/jacobrosenthal/imtomu-rs/tree/iot-dev-fest) and specifically the [blink example](https://github.com/jacobrosenthal/imtomu-rs/blob/iot-dev-fest/examples/blink.rs)
 
-From the directions there youll see were going to need a few more commands to set up embedded: `rustup default nightly` `rustup target add thumbv6m-none-eabi` `rustup component add llvm-tools-preview`
-
-And then when we run well need to run in 'release mode' and since this is normally a library, we can tell cargo to run its example file with `cargo run --release --example blink` Ive hooked up scripts so that upon building, it also uploads the code to your tomu via dfu. Youll need dfu-util installed
+And then when we run well need to run in 'release mode' and since this is normally a library, we can tell cargo to run its example file with `cargo run --release --example blink` Ive hooked up scripts so that upon building, it also uploads the code to your tomu via dfu.  
 
 So what embedded rust attempts to do is remove 'global state' that is the registers by turning them into structs, extending functionality on them with traits, and restricting usage of them via the same ownership models weve seen.
-
 
 References:
 * http://blog.japaric.io/brave-new-io/
