@@ -60,7 +60,7 @@ So rodio says it wants us to add it to our Cargo.toml under dependencies so lets
 rodio = "0.8.1"
 ```
 
-You can take a look at the [rodio documentation](https://docs.rs/rodio/0.8.1/rodio/), but heres some simple code to make a sin wave.
+You can take a look at the [rodio documentation](https://docs.rs/rodio/0.8.1/rodio/), but here's some simple code to make a sin wave.
 ```
 use rodio::default_output_device;
 use rodio::source::{SineWave, Source};
@@ -115,7 +115,7 @@ impl Display for Morse {
     }
 }
 ```
-Instead of just println! the whole thing, here were using [iterators](https://doc.rust-lang.org/book/ch13-00-functional-features.html) another important concept in Rust you need to get to know. We call the [.chars() function](https://doc.rust-lang.org/std/str/struct.Chars.html) on a String and for each over that iterator which is safer than a for loop where a common error you might have made is is off by one your index variable.
+Instead of just println! the whole thing, here we're using [iterators](https://doc.rust-lang.org/book/ch13-00-functional-features.html) another important concept in Rust you need to get to know. We call the [.chars() function](https://doc.rust-lang.org/std/str/struct.Chars.html) on a String and for each over that iterator which is safer than a for loop where a common error you might have made is is off by one your index variable.
 
 Now we need to make this new text.rs file available to our main.rs by importing it with `mod text;` and using your new trait with `use crate::text::Display` and then instead of println! in your main, you can just call `.display()`. This is what mine looks like
 ```
@@ -137,7 +137,7 @@ Now you can `cargo run` to see it print
 ```
 Note, this hooking many functions together is called the builder pattern, and along with iterators are specific examples of some of the more declaritive (or functional) styles seen in Rust. Both syntaxes lead to rather pleasant and easy to reason about code.
 
-* Can you use [thread::sleep](https://doc.rust-lang.org/std/thread/fn.sleep.html) to sleep between characters so it looks stuttery like text coming over the wire? You'll also needed to `stdout().flush()` between character writes or theyll get buffered by the operating system and all come out at the same time.
+* Can you use [thread::sleep](https://doc.rust-lang.org/std/thread/fn.sleep.html) to sleep between characters so it looks stuttery like text coming over the wire? You'll also needed to `stdout().flush()` between character writes or they'll get buffered by the operating system and all come out at the same time.
 
 
 ## put it all together
