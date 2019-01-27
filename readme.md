@@ -14,7 +14,7 @@ Prerequisites
 
 ## anotomy of rust program and some workflow
 
-lets open a terminal and create a new package with `cargo new rust-iot-devfest` and go to that directory with `cd rust-iot-devfest`
+Open a terminal and create a new package with `cargo new rust-iot-devfest` and go to that directory with `cd rust-iot-devfest`
 
 Now we have a Cargo.toml which defines our project, not unlike a package.json if you're familiar with Node.js, it defines dependencies we're using and other project information:
 ```
@@ -90,13 +90,13 @@ So neat, but whats unwrap? If you take that out, the compiler will tell you `exp
 
 ## lets make text
 Lets get another package, a morse code package called [light-morse](https://crates.io/crates/light-morse) 
-*See if you can install this one yourself.
-*Have it print out Hello world but in morse code this time.
+* See if you can install this one yourself.
+* Have it print out `Hello World` but in morse code this time.
 
 
 ## lets make traits
-Anybody can write a wall of code. The way we organize code in Rust is in modules, and by making new types extending existing types. How did morse make a `to_morse()` method on a regular old String? Thats definately not in the standard library! Lets look at how morse was implemented. Code for libraries is generally in a file called [lib.rs](https://github.com/luki/light-morse/blob/master/src/lib.rs) We see they defined a trait called MorseSubstitution which is why they can call `to_morse()` on a String that normally doesnt have a to_morse method. This is [trait based inheritence](https://doc.rust-lang.org/book/ch10-02-traits.html) (called mixins in other languages) is an important concept in Rust/
-* Lets make a new trait in a new file called text.rs that extends Morse (which itself is just a String). For every Morse char they translate, lets print to screen with delays:
+Anybody can write a wall of code. The way we organize code in Rust is in modules and by making new types extending existing types. How did the morse author make a regular old String have a method called `to_morse()` Code for libraries is generally in a file called lib.rs and [light morse](https://github.com/luki/light-morse/blob/master/src/lib.rs) is no different. We see they defined a trait called MorseSubstitution which implements `to_morse()` on a Plaintext type (which is defined above as an alias type of String). This is [trait based inheritence](https://doc.rust-lang.org/book/ch10-02-traits.html) (called mixins in other languages) is an important concept in Rust.
+* Lets make our own new trait in a new file called text.rs that extends Morse (the type to_morse() returns).
 ```
 use light_morse::Morse;
 use std::io::stdout;
@@ -115,44 +115,56 @@ impl Display for Morse {
     }
 }
 ```
-Here were using [iterators](https://doc.rust-lang.org/book/ch13-00-functional-features.html) another important concept in Rust you need to get to know. We can call the [.chars() function](https://doc.rust-lang.org/std/str/struct.Chars.html) on a String (Morse is just a String behind the scenes here) and do a for each over that iterator which is safer than a for loop where a common error you might have made is is off by one your index variable.
+Instead of just println! the whole thing, here were using [iterators](https://doc.rust-lang.org/book/ch13-00-functional-features.html) another important concept in Rust you need to get to know. We call the [.chars() function](https://doc.rust-lang.org/std/str/struct.Chars.html) on a String and for each over that iterator which is safer than a for loop where a common error you might have made is is off by one your index variable.
 
-Finally we need to make this new text.rs file available to our main.rs by importing it with `mod text;` and using your new trait with `use crate::text::Display`
+Now we need to make this new text.rs file available to our main.rs by importing it with `mod text;` and using your new trait with `use crate::text::Display` and then instead of println! in your main, you can just call `.display()`. This is what mine looks like
 ```
 mod text;
-
 use crate::text::Display;
 use light_morse::MorseSubstitution;
 use light_morse::MorseType;
 
 fn main() {
-    "Morse".to_string().to_morse(MorseType::Gerke).display();
+    "Hello World"
+        .to_string()
+        .to_morse(MorseType::Gerke)
+        .display();
 }
 ```
-Note were not printing anything out here anymore, weve hidden all that code in the display trait. Also note this hooking many functions together (builder pattern) as well as use of iterators above is one of the more declaritive (or functional) styles seen in Rust. Both syntaxes lead to rather pleasant and easy to reason about code.
+Now you can `cargo run` to see it print
+```
+······−···−···−··· ·−−·−····−··−··−··
+```
+Note, this hooking many functions together is called the builder pattern, and along with iterators are specific examples of some of the more declaritive (or functional) styles seen in Rust. Both syntaxes lead to rather pleasant and easy to reason about code.
 
-* Can you use of [thread::sleep](https://doc.rust-lang.org/std/thread/fn.sleep.html) to sleep between characters so it looks stuttery like text coming over the wire? You'll also needed to `stdout().flush()` between characters or they get buffered by the operating system and all come out at the same time.
+* Can you use [thread::sleep](https://doc.rust-lang.org/std/thread/fn.sleep.html) to sleep between characters so it looks stuttery like text coming over the wire? You'll also needed to `stdout().flush()` between character writes or theyll get buffered by the operating system and all come out at the same time.
 
 
 ## put it all together
 Can you edit the Display trait to make a long beep for dashes and a short beep for dots instead of/in addition to printing the character? You're probably thinking of doing this with an if statement, but a more Rusty solution would be to use [Match](https://doc.rust-lang.org/1.5.0/book/match.html). Note here, the morse characters are not a regular dash, but rather these these ascii characters `−` `·` 
 
 ### So why is Rust different than C++? 
-Safey can be acheived in C, for time and money. But its not baked into the language and its not easy to teach. Further, Rust's lack of legacy is a benefit more than a hinderance. Rust only has one compiler, not competing vendors with multiple compilers. Further Rustaceans are designing the language in github issues and nightly code releases instead of by committes that only Facebook and Google can afford to fly to attend (and thus only their needs are ever met) Rust has modularized code and a single package manager, (Cargo, like npm for packages) which means code sharing is far easier and comes more naturally to Rustaceans. C++ hopes to ship module support in their 2020 release, but many people are still running C++ 2014 today... Most of you here today have never and may never reach for C or C++ to play a bunch sounds and
+Safey can be acheived in C, for time and money. But its not baked into the language and its not easy to teach. Further, Rust's lack of legacy is a benefit more than a hinderance. Rust only has one compiler, not competing vendors with multiple compilers. Further Rustaceans are designing the language in Github issues and nightly code releases instead of by committees that only Facebook and Google can afford to fly to and attend and thus our needs can never be met. Rust has modularized code and a single package manager which means code sharing is far easier and comes more naturally to Rustaceans. C++ hopes to ship module support in their 2020 release, but many people are still running C++ 2014 today... 
 
 
 ## My bold claim
-Rust's guarantees means it allows more, better code, to be written faster, and it unifies all of development finally. We can write driver code for microcontrollers and kernels, libraries on top of that for laptops and servers, and take logic from that and deploy it to the cloud and browser. Programming is difficult enough without switching languages and one programmer not necessarily able to mentor another. So no more this guy writes linux kernel C but cant write anything for the web (and therefor shittalks js devs), or this guy is a web developer it thinks it would take an engineering degree to be able to write some non toy code for a microcontroller.
+Most of you here today have never and may never reach for C or C++ to script some simple CLI, filesystem or networking stuff, but I think you could and maybe even should start doing just that with Rust. Those skills will build and transfer to webassembly, microcontrollers, blockchains and the many other 'unhosted' environments in the future.
 
-And lets face it we need sea changes in software development. Were 10 years into hackerspaces and bootcamps are we making enough strong developers to guard the internet of things as we move to a billion devices in the years to come?
+And lets face it we need sea changes in software development. We're 10 years into hackerspaces and bootcamps and are we making enough strong developers to guard the internet of things as we move to a billion devices in the years to come?
 
+Rust's guarantees means more, better, code to be written faster. 
 
 
 
 # Embedded Rust
 
+Embedded Rust is a single example of 'unhosted' or 'freestanding' code. There is no operating system under the hood to lean on. In rust this is generallly referred to as no_std. We don't get to use anything that starts with std::. Including std::String! There are make-do packages and ways around, but for now lets assume we don't use what we call things that 'allocate'.
+
+Just like the web design world, personified by React, is hell bent on removing global state, so too are the embedded Rust community driven. We do this by turning all microcontroller registers into singleton structs, extending functionality on them with traits, and restricting usage of them via the same ownership models weve seen in other Rust. This with the existing Rust safety guarantees vastly cleans up microcontroller code hygiene and is proving to crate far safer code.
+
+
 ## anotomy of no_std rust program
-Mostly the same, but a little more boiler plate
+Mostly the same, but a bit more boiler plate to start. 
 ```
 #![no_std]
 #![no_main]
@@ -166,10 +178,11 @@ fn main() -> ! {
     }
 }
 ```
-So no_std is the big deal here. We don't get anything that starts with std:: including String! There are make do packages, and ways around, but for now lets assume we don't use what we call things that 'allocate'
+Note the main function could be called anything, but is generally still called main for posterity. Also note that it returns `!` ie it doesn't return, as you can see the loop can't ever exit. The panic handler is what gets called if we something goes wrong. Here we import a package to handle that for us which will just halt the microcontroller.
+
 
 ## tomu
-[Tomu](https://tomu.im) is a fun little arm microcontroller that fits in your USB-A port. I'm not affiliated in any way, I just hoped you'd always have a microcontroller with you would and no excuses to goof around with it. My thanks to [Crowd Supply](https://www.crowdsupply.com) for sponsoring these today. The Tomu has 2 leds (red and green), capacitive touch buttons and USB. With their [easy to use C code examples](https://github.com/im-tomu/tomu-quickstart) you could (in any language of your choosing) watch the USB for 'button presses' or have a program on your laptop trigger leds on the device like a notification, and many more things.
+[Tomu](https://tomu.im) is a fun little arm microcontroller that fits in your USB-A port. I'm not affiliated in any way, I just hoped you'd always have a microcontroller in your pocket (or port). My thanks to [Crowd Supply](https://www.crowdsupply.com) for sponsoring these today. The Tomu has two leds (red and green), capacitive touch buttons and USB. With their [easy to use C code examples](https://github.com/im-tomu/tomu-quickstart) you could (in any language of your choosing) watch the USB for 'button presses' or have a program on your laptop trigger leds on the device like a notification led, and many more things.
 
 But I'm developing the Rust capabilities for this board. GPIO blinky stuff is done, but USB and capacitive touch aren't yet so stay tuned.
  
@@ -177,16 +190,14 @@ But I'm developing the Rust capabilities for this board. GPIO blinky stuff is do
 * Run `rustup target add thumbv6m-none-eabi` to add the compiler bits for this board
 * Run `rustup component add llvm-tools-preview`
 * Install [dfu-util](https://tomu.im/samples) from directions on this page
+* Download [my tomu hal fork](https://github.com/fudanchii/imtomu-rs) and specifically the [blink example](https://github.com/fudanchii/imtomu-rs/blob/master/examples/blink.rs)
 
-Download [my tomu hal fork](https://github.com/jacobrosenthal/imtomu-rs/tree/iot-dev-fest) and specifically the [blink example](https://github.com/jacobrosenthal/imtomu-rs/blob/iot-dev-fest/examples/blink.rs)
+Finally, this time when we run, we need to run in 'release mode' and since this package is a lib.rs there nothing to run, we can tell cargo to run its example file instead with `cargo run --release --example blink` Ive hooked up scripts so that upon building successfully, it also uploads the code to your Tomu via dfu. If you want to reprogram your Tomu youll need to pull it out of the port to reset it back to the bootloader.  
 
-And then when we run well need to run in 'release mode' and since this is normally a library, we can tell cargo to run its example file with `cargo run --release --example blink` Ive hooked up scripts so that upon building, it also uploads the code to your tomu via dfu.  
-
-So what embedded rust attempts to do is remove 'global state' that is the registers by turning them into structs, extending functionality on them with traits, and restricting usage of them via the same ownership models weve seen.
 
 References:
 * http://blog.japaric.io/brave-new-io/
-* https://doc.rust-lang.org/book/ch01-03-hello-cargo.html
+* https://doc.rust-lang.org/book
 * https://docs.rust-embedded.org/book/start/registers.html
 * https://docs.rust-embedded.org/embedonomicon/main.html
 
