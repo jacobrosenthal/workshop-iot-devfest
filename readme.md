@@ -187,15 +187,54 @@ Note the main function could be called anything, but is generally still called m
 ## tomu
 [Tomu](https://tomu.im) is a fun little arm microcontroller that fits in your USB-A port. I'm not affiliated in any way, I just hoped you'd always have a microcontroller in your pocket (or port). My thanks to [Crowd Supply](https://www.crowdsupply.com) for sponsoring these today. The Tomu has two leds (red and green), capacitive touch buttons and USB. With their [easy to use C code examples](https://github.com/im-tomu/tomu-quickstart) you could (in any language of your choosing) watch the USB for 'button presses' or have a program on your laptop trigger leds on the device like a notification led, and many more things.
 
-But I'm developing the Rust capabilities for this board. GPIO blinky stuff is done, but USB and capacitive touch aren't yet so stay tuned.
+But I'm part of a group developing the Rust capabilities for this board. GPIO blinky stuff is done, but USB and capacitive touch aren't yet so stay tuned.
  
 ## setup and blink
 * Run `rustup target add thumbv6m-none-eabi` to add the compiler bits for this board
 * Run `rustup component add llvm-tools-preview`
 * Install [dfu-util](https://tomu.im/samples) from directions on this page
-* Download [my tomu hal fork](https://github.com/fudanchii/imtomu-rs) and specifically the [blink example](https://github.com/fudanchii/imtomu-rs/blob/master/examples/blink.rs)
+* Download [tomu rust](https://github.com/fudanchii/imtomu-rs)
 
 Finally, this time when we run, we need to run in 'release mode' and since this package is a lib.rs there nothing to run, we can tell cargo to run its example file instead with `cargo run --release --example blink` Ive hooked up scripts so that upon building successfully, it also uploads the code to your Tomu via dfu. If you want to reprogram your Tomu youll need to pull it out of the port to reset it back to the bootloader.  
+
+## what happened
+There are ~three layers in the embedded Rust world. 
+
+**Peripheral Access Crates (PAC)**
+
+These are generally generated from hardware vendor xml files (called SVDs) of all the available registers and functionality available. We take those and generate the peripherals object which usually has something akin to a GPIO object. To write to a register to enable or disable an led you might write:
+```
+    p.GPIO.pb_doutset.write(|w| unsafe { w.bits(1 << 7) });
+```
+ However this is a bit low level and ugly and while less error prone than C, still rather error prone. We further use traits as we've seen before to clean this up:
+ 
+**Hardware Abstraction Layer (HAL)**
+
+```
+pub trait OutputPin {
+    fn set_low(&mut self);
+}
+
+impl OutputPin for B7<WiredAnd> {
+    fn set_low(&mut self) {
+        (*efm32::GPIO::ptr()).pb_doutset.write(|w| unsafe { w.bits(1 << 7) );
+    }
+}
+```
+and now we can simply
+```
+b7.set_low();
+```
+Now thats starting to look like high level code, but on a microcontroller! We can often do one better. 
+
+**Board Support Package (BSP)**
+
+For a specific revision of our board, like the Tomu, we could further clean up the api and offer drivers and things that only make sense with this specific set of harware and features. We can also rename pins based on whats printed on the board. For electrical reason, LEDs often aren't necessarily on when they're high, we can clean this up here too so maybe now it looks like
+```
+red.enable();
+```
+
+Just like today, all this is generally often going to be done for you by the PAC, HAL, and BSP authors. You can find a list of things like this in crates.io in general and [awesome-embedded-rust](https://github.com/rust-embedded/awesome-embedded-rust) a curated list of crates specifically for hardware. Hopefully your favorite bit of hardware is already suported and theres some goodies to try on top of it.
 
 
 References:
@@ -203,9 +242,3 @@ References:
 * https://doc.rust-lang.org/book
 * https://docs.rust-embedded.org/book/start/registers.html
 * https://docs.rust-embedded.org/embedonomicon/main.html
-
-
-
-
-
-
