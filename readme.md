@@ -1,8 +1,4 @@
-
-# me
-I'm a freelance embedded engineer. I've specialized in embedded bluetooth consulting recently which has kept me all up and down the stack from Chrome and Web Bluetooth down to drivers and RTOS. I was recently diagnosed with Rust and am told I have been insufferable since. I've recently taken over the [monthly Phoenix Rust meetup](https://www.meetup.com/Desert-Rustaceans/) and we'd love to have you there to continue what we start today. You'll also find a weekly study group called booze.rs held both offline and online in #rust on http://az-webdevs.slack.com so please join us there to keep up with the community and ask your code questions.
-
-# Rust
+# workshop-iot-devfest
 Rust is an incredibly promising new (~10 year old) systems language whose offers of safety, speed, and concurrency are badly needed in the IOT space right now. We all know a great engineer can develop safe C code, but clearly we need more, faster, and cheaper lines of code than C has been able to deliver in recent decades.
 
 In the first part of this workshop we'll just generally learn the language and how to listen to the compiler by developing a simple CLI application on our laptops. With what time we have left well see what embedded code looks like and try some blink examples on the Tomu USB device.
@@ -14,6 +10,8 @@ Prerequisites
 * [Tomu](https://tomu.im)
 * (optional) VScode or IntelliJ for code completion. (neither vim, sublime, or anything else completes decently sadly)
 
+## me
+I'm a freelance embedded engineer. I've specialized in embedded bluetooth consulting recently which has kept me all up and down the stack from Chrome and Web Bluetooth down to drivers and RTOS. I was recently diagnosed with Rust and am told I have been insufferable since. I've recently taken over the [monthly Phoenix Rust meetup](https://www.meetup.com/Desert-Rustaceans/) and we'd love to have you there to continue what we start today. You'll also find a weekly study group called booze.rs held both offline and online in #rust on http://az-webdevs.slack.com so please join us there to keep up with the community and ask your code questions.
 
 ## anotomy of Rust program and some workflow
 
