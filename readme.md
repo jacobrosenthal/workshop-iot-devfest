@@ -1,18 +1,21 @@
-# workshop-iot-devfest
 
+# Jacob
+I'm a freelance embedded engineer. I've specialized in embedded bluetooth consulting recently which has kept me all up and down the stack from Chrome and Web Bluetooth down to drivers and RTOS. I was recently diagnosed with Rust am told I have been insufferable since. I've recently taken over the [monthly Phoenix Rust meetup](https://www.meetup.com/Desert-Rustaceans/) and we'd love to have you to continue what we start today. You'll also find a weekly study group there called booze.rs held both offline and online in #rust on http://az-webdevs.slack.com so please join us there to keep up with the community and ask your code questions.
+
+# Rust
 Rust is an incredibly promising new (~10 year old) systems language whose offers of safety, speed, and concurrency are badly needed in the IOT space right now. We all know a great engineer can develop safe C code, but clearly we need more, faster, and cheaper lines of code than C has been able to deliver in recent decades.
 
-In the first part well just generally learn the language and how to talk to the compiler by developing a simple CLI application on our laptops. With what time we have left well see what embedded code looks like and try some blink examples on the Tomu USB device.
+In the first part of this workshop we'll just generally learn the language and how to listen to the compiler by developing a simple CLI application on our laptops. With what time we have left well see what embedded code looks like and try some blink examples on the Tomu USB device.
 
 Prerequisites
 * [Rust installed](https://www.rust-lang.org/tools/install)
 * Basic programming skills - though feel free to come and work at your own pace.
 * Laptop with a common USB-A port or dongle.
 * [Tomu](https://tomu.im)
-* vscode for code completion. (vim, sublime, nothing else completes decently)
+* (optional) VScode or IntelliJ for code completion. (neither vim, sublime, or anything else completes decently sadly)
 
 
-## anotomy of rust program and some workflow
+## anotomy of Rust program and some workflow
 
 Open a terminal and create a new package with `cargo new rust-iot-devfest` and go to that directory with `cd rust-iot-devfest`
 
@@ -26,7 +29,7 @@ edition = "2018"
 
 [dependencies]
 ```
-In src folder we have main.rs, a rust file. In this case it generated a simple hello world. main is a function denoted by fn. The exclamation after println! means that is a macro. When you see something you dont understand, the place to look is the [Rust Book](https://doc.rust-lang.org/book/ch19-06-macros.html). For now though, well just think of macros as a fancy function.
+In src folder we have main.rs, a Rust file. In this case it generated a simple hello world. main is a function denoted by fn. The exclamation after println! means that is a macro. When you see something you dont understand, the place to look is the [Rust Book](https://doc.rust-lang.org/book/ch19-06-macros.html). For now though, well just think of macros as a fancy function.
 ```
 fn main() {
     println!("Hello, world!");
@@ -158,12 +161,12 @@ Rust's guarantees means more, better, code to be written faster.
 
 # Embedded Rust
 
-Embedded Rust is a single example of 'unhosted' or 'freestanding' code. There is no operating system under the hood to lean on. In rust this is generallly referred to as no_std. We don't get to use anything that starts with std::. Including std::String! There are make-do packages and ways around, but for now lets assume we don't use what we call things that 'allocate'.
+Embedded Rust is a single example of 'unhosted' or 'freestanding' code. There is no operating system under the hood to lean on. In Rust this is generallly referred to as no_std. We don't get to use anything that starts with std::. Including std::String! There are make-do packages and ways around, but for now lets assume we don't use what we call things that 'allocate'.
 
 Just like the web design world, personified by React, is hell bent on removing global state, so too are the embedded Rust community driven. We do this by turning all microcontroller registers into singleton structs, extending functionality on them with traits, and restricting usage of them via the same ownership models weve seen in other Rust. This with the existing Rust safety guarantees vastly cleans up microcontroller code hygiene and is proving to crate far safer code.
 
 
-## anotomy of no_std rust program
+## anotomy of no_std Rust program
 Mostly the same, but a bit more boiler plate to start. 
 ```
 #![no_std]
