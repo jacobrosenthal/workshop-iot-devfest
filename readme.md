@@ -8,7 +8,6 @@ Prerequisites
 * Basic programming skills - though feel free to come and work at your own pace.
 * Laptop with a common USB-A port or dongle.
 * [Tomu](https://tomu.im)
-* (optional) VScode or IntelliJ for code completion. (neither vim, sublime, or anything else completes decently sadly)
 
 ## me
 I'm a freelance embedded engineer. I've specialized in embedded bluetooth consulting recently which has kept me all up and down the stack from Chrome and Web Bluetooth down to drivers and RTOS. I was recently diagnosed with Rust and am told I have been insufferable since. I've recently taken over the [monthly Phoenix Rust meetup](https://www.meetup.com/Desert-Rustaceans/) and we'd love to have you there to continue what we start today. You'll also find a weekly study group called booze.rs held both offline and online in #rust on http://az-webdevs.slack.com so please join us there to keep up with the community and ask your code questions.
