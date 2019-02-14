@@ -73,7 +73,7 @@ fn main() {
     //make a little sine wave
     let source = SineWave::new(440);
     let short = source.take_duration(Duration::from_millis(200));
-    sink.append(short.buffered());
+    sink.append(short);
 
     //actually play
     sink.sleep_until_end();
@@ -89,72 +89,80 @@ So neat, but what's unwrap? If you take that out, the compiler will tell you `ex
 * Read the [rodio documentation](https://docs.rs/rodio/0.8.1/rodio/) or [source code and examples](https://github.com/tomaka/rodio) for more options to try, like fading in and out, playing multiple tones at the same time, loading audio files from the filesystem.
 
 ## let's make text
-Lets get another package, a morse code package called [light-morse](https://crates.io/crates/light-morse) 
-* See if you can install this one yourself.
-* Have it print out `Hello World` but in morse code this time.
+Lets get another package, a morse code package aptly titled [morse-code](https://crates.io/crates/morse-code)
 
+From the docs we see we can call `into_morse()` on a static string like `"Hello World"` and get back a MorseIter which is an [iterator](https://doc.rust-lang.org/book/ch13-00-functional-features.html). Iterators are nice because they remove the possibility of the common 'off by one' error most of us have made indexing for loops and another important concept in Rust you need to get to know. We could manually call `.next()` on the iterator to get back MorseSymbols but better yet lets for each into a new variable called morse_symbol and print that and see what we get:
 
-## let's make traits
-Anybody can write a wall of code. The way we organize code in Rust is in modules and by making new types extending existing types. How did the morse author make a regular old String have a method called `to_morse()` Code for libraries is generally in a file called lib.rs and [light morse](https://github.com/luki/light-morse/blob/master/src/lib.rs) is no different. We see they defined a trait called MorseSubstitution which implements `to_morse()` on a Plaintext type (which is defined above as an alias type of String). This is [trait based inheritance](https://doc.rust-lang.org/book/ch10-02-traits.html) (called mixins in other languages) is an important concept in Rust.
-* Lets make our own new trait in a new file called text.rs that extends Morse (the type to_morse() returns).
 ```
-use light_morse::Morse;
-use std::io::stdout;
-use std::io::Write;
-
-pub trait Display {
-    fn display(&self);
-}
-
-impl Display for Morse {
-    fn display(&self) {
-        for item in self.chars() {
-            print!("{}", item);
-        }
-        println!();
+fn main() {
+    for morse_symbol in "Hello World".into_morse() {
+        print!("{:?}", morse_symbol);
     }
 }
 ```
-Instead of just `println!()` the whole String, here we're using [iterators](https://doc.rust-lang.org/book/ch13-00-functional-features.html) another important concept in Rust you need to get to know. We call the [.chars() function](https://doc.rust-lang.org/std/str/struct.Chars.html) on a String and for each over that iterator. It replaces the for loop over an index variable which removing the possibility of the common 'off by one' error most of us have made.
-
-Now we need to make this new text.rs file available to our main.rs by importing it with `mod text;` and using your new trait with `use crate::text::Display` and then instead of println! in your main, you can just call `.display()`. This is what mine looks like
+If you run this you'll see
 ```
-mod text;
-use crate::text::Display;
-use light_morse::MorseSubstitution;
-use light_morse::MorseType;
-
+[Dot, Dot, Dot, Dot][Dot, Empty, Empty, Empty][Dot, Dash, Dot, Dot][Dot, Dash, Dot, Dot][Dash, Dash, Dash, Empty][Space, Empty, Empty, Empty][Dot, Dash, Dash, Empty][Dash, Dash, Dash, Empty][Dot, Dash, Dot, Empty][Dot, Dash, Dot, Dot][Dash, Dot, Dot, Empty] 
+```
+Ah. morse_symbol is an array of morse_chars. lets unwrap it once further with a new iterator out of our array
+```
 fn main() {
-    "Hello World"
-        .to_string()
-        .to_morse(MorseType::Gerke)
-        .display();
+    for morse_symbol in "Hello World".into_morse() {
+        for morse_char in morse_symbol.iter() {
+            print!("{:?}", morse_char);
+        }
+    }
 }
 ```
-Now you can `cargo run` to see it print
 ```
-······−···−···−··· ·−−·−····−··−··−··
+DotDotDotDotDotEmptyEmptyEmptyDotDashDotDotDotDashDotDotDashDashDashEmptySpaceEmptyEmptyEmptyDotDashDashEmptyDashDashDashEmptyDotDashDotEmptyDotDashDotDotDashDotDotEmpty
 ```
-Note, this hooking many functions together is called the builder pattern, and along with iterators are specific examples of some of the more declarative (or functional) styles seen in Rust. Both syntaxes lead to rather pleasant and easy to reason about code.
-
+Better, but could be improved:
+* See if you can install this crate and `use` it yourself.
+* Now, can you detect dashes and dots and print something prettier, like `-` and a `.` instead of this debug output with names all mashed together?. You're probably thinking of doing this with an if statement, but a more Rusty solution would be to use [Match](https://doc.rust-lang.org/1.5.0/book/match.html). Instead of [matching on characters like the morse-code library does](https://github.com/jacobrosenthal/morse-code-rs/blob/f306caa06b89beba9777c3de76f186da1b5dea11/src/lib.rs#L54), you want to match on [MorseChars](https://github.com/jacobrosenthal/morse-code-rs/blob/f306caa06b89beba9777c3de76f186da1b5dea11/src/lib.rs#L4)
 * Can you use [thread::sleep](https://doc.rust-lang.org/std/thread/fn.sleep.html) to sleep between characters so it looks stuttery like text coming over the wire? You'll also needed to `stdout().flush()` between character writes or they'll get buffered by the operating system and all come out at the same time.
 
 
-## put it all together
-Can you edit the Display trait to make a long beep for dashes and a short beep for dots instead of/in addition to printing the character? You're probably thinking of doing this with an if statement, but a more Rusty solution would be to use [Match](https://doc.rust-lang.org/1.5.0/book/match.html). Note here, the morse characters are not a regular dash, but rather these these ascii characters `−` `·` 
 
-### So why is Rust different than C++? 
-Safety can be achieved in C, for time and money. But it's not baked into the language and it's not easy to teach. Further, Rust's lack of legacy is a benefit more than a hindrance. Rust only has one compiler, not competing vendors with multiple compilers. Further Rustaceans are designing the language in Github issues and nightly code releases instead of by committees that only Facebook and Google can afford to fly to and attend and thus our needs can never be met. Rust has modularized code and a single package manager which means code sharing is far easier and comes more naturally to Rustaceans. C++ hopes to ship module support in their 2020 release, but many people are still running C++ 2014 today... 
+## let's make traits
+Our code is kinda getting cluttered now. One big way we organize code in Rust is in modules and by making new types extending existing types. How did the morse author make a regular static strings have a method called `into_morse()`? Lets go look. Code for libraries is generally in a file called lib.rs and [morse-code](https://github.com/jacobrosenthal/morse-code-rs/blob/f306caa06b89beba9777c3de76f186da1b5dea11/src/lib.rs) is no different. We see they defined a trait called IntoMorse which implements `into_morse()` on a static string. This is [trait based inheritance](https://doc.rust-lang.org/book/ch10-02-traits.html) (called mixins in other languages) is an important concept in Rust.
+* Lets make our own new trait in a new file called text.rs that extends MorseIter (the type into_morse() returns).
+```
+use morse_code::MorseIter;
 
+pub trait Display {
+    fn display(self);
+}
 
-## My bold claim
-Most of you here today have never and may never reach for C or C++ to script some simple CLI, filesystem or networking stuff, but I think you could and maybe even should start doing just that with Rust. Those skills will build and transfer to webassembly, microcontrollers, blockchains and the many other 'unhosted' environments in the future.
+impl Display for MorseIter {
+    fn display(self) {
+        for morse_symbol in self {
+            for morse_char in morse_symbol.iter() {
+                print!("{:?}", morse_char);
+            }
+        }
+    }
+}
+```
+Self here is the MorseIter that this function was called on. Now we need to make this new text.rs file available to our main.rs by importing it with `mod text;` and using your new trait with `use crate::text::Display` and then instead of println! in your main, you can just call `.display()`. This is what mine looks like
+```
+mod text;
+use crate::text::Display;
+use morse_code::IntoMorse;
 
-And let's face it we need sea changes in software development. We're 10 years into hackerspaces and bootcamps and are we making enough strong developers to guard the internet of things as we move to a billion devices in the years to come?
+fn main() {
+    "Hello World".into_morse().display();
+}
+```
+This looks much better. Note, this hooking many functions together along with iterators are specific examples of some of the more declarative (or functional) styles seen in Rust. Both syntaxes lead to rather pleasant and easy to reason about code.
 
-Rust's guarantees means more, better, code to be written faster. 
+Now you can `cargo run` to see it print
+```
+DotDotDotDotDotEmptyEmptyEmptyDotDashDotDotDotDashDotDotDashDashDashEmptySpaceEmptyEmptyEmptyDotDashDashEmptyDashDashDashEmptyDotDashDotEmptyDotDashDotDotDashDotDotEmpty
+```
 
-
+* Can you cleanup your main.rs by moving all your fancy code from the previous lesson into the display function in text.rs?
+* Now can you make a new trait similar to our text but for sound? Make a long beep for dashes and a short beep for dots.
 
 # Embedded Rust
 
@@ -203,7 +211,7 @@ These are generally generated from hardware vendor xml files (called SVDs) of al
 ```
     p.GPIO.pb_doutset.write(|w| unsafe { w.bits(1 << 7) });
 ```
-There's quite a bit happening here we need to talk about. The write function here takes a [closure](https://doc.rust-lang.org/book/ch13-01-closures.html), an anonymous function, is much like a passing a callback function. `write()` is going to call our closure with a variable of `w`. Also note the use of [unsafe](https://doc.rust-lang.org/book/ch19-01-unsafe-rust.html) The `bits()` function deals with memory directly and puts means the compiler can't guarantee our safety during this operation. That's OK and even common especially at the lowest levels of Rust, but it is designed to jump out at you and make you manually reason about the safety of this operation. Finally, notice there is no semicolon after the `bits()` function? You might have seen this in code above but we haven't addressed it yet. Rust has [implicit return of expressions](https://doc.rust-lang.org/book/ch03-03-how-functions-work.html#function-bodies-contain-statements-and-expressions) so on the last line of a function its common to leave off the semicolon in order to return the result of the line. Here `bits()` actually returns an integer (u8) and were implicitly returning that value. So what we've done is return 1<<7 or 0x80, or 128. I hope you'll agree this is a bit low level and ugly and while less error prone than C, still rather error prone. We further use traits as we've seen before to clean this up
+There's quite a bit happening here we need to talk about. The write function here takes a [closure](https://doc.rust-lang.org/book/ch13-01-closures.html), an anonymous function, is much like a passing a callback function. `write()` is going to call our closure with a variable of `w`. Also note the use of [unsafe](https://doc.rust-lang.org/book/ch19-01-unsafe-rust.html) The `bits()` function deals with memory directly and puts means the compiler can't guarantee our safety during this operation. That's OK and even common especially at the lowest levels of Rust, but it is designed to jump out at you and make you manually reason about the safety of this operation. Finally, notice there is no semicolon after the `bits()` function? You might have seen this in code above but we haven't addressed it yet. Rust has [implicit return of expressions](https://doc.rust-lang.org/book/ch03-03-how-functions-work.html#function-bodies-contain-statements-and-expressions) so on the last line of a function its common to leave off the semicolon in order to return the result of the line. Here `bits()` actually returns an integer (u8) and were implicitly returning that value. So what we've done is return 1<<7 or 0x80, or 0b10000000. I hope you'll agree this is a bit low level and ugly and while less error prone than C, still rather error prone. We further use traits as we've seen before to clean this up
  
 **Hardware Abstraction Layer (HAL)**
 
@@ -239,5 +247,20 @@ References:
 * https://doc.rust-lang.org/book
 * https://docs.rust-embedded.org/book/start/registers.html
 * https://docs.rust-embedded.org/embedonomicon/main.html
+
+
+
+### So why is Rust different than C++? 
+Safety can be achieved in C, for time and money. But it's not baked into the language and it's not easy to teach. Further, Rust's lack of legacy is a benefit more than a hindrance. Rust only has one compiler, not competing vendors with multiple compilers. Further Rustaceans are designing the language in Github issues and nightly code releases instead of by committees that only Facebook and Google can afford to fly to and attend and thus our needs can never be met. Rust has modularized code and a single package manager which means code sharing is far easier and comes more naturally to Rustaceans. C++ hopes to ship module support in their 2020 release, but many people are still running C++ 2014 today... 
+
+
+## My bold claim
+Most of you here today have never and may never reach for C or C++ to script some simple CLI, filesystem or networking stuff, but I think you could and maybe even should start doing just that with Rust. Those skills will build and transfer to webassembly, microcontrollers, blockchains and the many other 'unhosted' environments in the future.
+
+And let's face it we need sea changes in software development. We're 10 years into hackerspaces and bootcamps and are we making enough strong developers to guard the internet of things as we move to a billion devices in the years to come?
+
+Rust's guarantees means more, better, code to be written faster. 
+
+
 
 
